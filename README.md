@@ -1,52 +1,69 @@
-# Indian Government Scheme Portal
+# Indian Government Scheme Portal 🏛️
 
-A modern, bilingual (English + Tamil) portal for discovering and applying for government schemes.
+A premium, full-stack government scheme discovery and application portal. Built with the MERN stack, featuring a bilingual AI assistant "Barath" and a powerful administrative dashboard.
 
-## Features
-- **Dynamic Scheme Discovery**: Search and filter schemes by category and state.
-- **Smart Eligibility Check**: Interactive modal to verify criteria before applying.
-- **User Authentication**: Secure registration and login with JWT.
-- **Persistent Tracking**: Track your applications using unique IDs.
-- **Barath AI Chatbot**: A local AI assistant powered by Ollama to help you find schemes and track applications.
+## 🚀 Key Features
 
-## Barath AI Chatbot Setup (Groq)
-The Barath chatbot runs on a high-speed Groq LLM for optimized performance and multi-language support.
+- **Premium UI/UX**: Modern, responsive design with smooth animations and a tricolor Indian theme.
+- **Bilingual Support**: Full support for both **English** and **Tamil** languages.
+- **Admin Panel**: Comprehensive dashboard for:
+    - **Scheme Management**: CRUD operations for government schemes with detailed eligibility rules.
+    - **Application Review**: Process, approve, or reject citizen applications with custom remarks.
+    - **User Monitoring**: View all registered users and their application progress.
+    - **Analytics**: Real-time stats on total users, schemes, and applications.
+- **Smart Eligibility Checker**: Enhanced verification system that checks age, gender, and income before allowing applications.
+- **Barath AI Chatbot**: Intelligent assistant powered by **Groq (Llama 3)** to help users find schemes and track statuses in their local language.
+- **Application Tracking**: Secure tracking using unique IDs (e.g., APP-2025-XXXXXX).
 
-1. **Groq API Key**: Get a free API key at [console.groq.com](https://console.groq.com) (no credit card needed).
-2. **Configure .env**: Add your key to the backend `.env` file:
-   ```
-   GROQ_API_KEY=your_groq_api_key_here
-   GROQ_MODEL=llama3-8b-8192
-   ```
-3. **Free Tier Info**: Supports up to 14,400 requests/day on the `llama3-8b-8192` model.
+## 🛠️ Technology Stack
 
-## Local Development Setup
+- **Frontend**: React.js, Vite, Vanilla CSS, React Router, Axios.
+- **Backend**: Node.js, Express.js.
+- **Database**: MongoDB (Mongoose).
+- **AI Engine**: Groq Cloud API (Llama 3-8B).
+- **Authentication**: JWT (JSON Web Tokens) with Role-Based Access Control (RBAC).
 
-### Backend
-1. Go to `server/` directory.
-2. Install dependencies: `npm install`.
-3. Create a `.env` file with:
-   ```
-   PORT=5000
-   MONGODB_URI=mongodb://localhost:27017/gov_portal
-   JWT_SECRET=your_secret_key
-   OLLAMA_MODEL=llama3
-   ```
-4. Start server: `npm run dev`.
+## ⚙️ Setup & Installation
 
-### Frontend
-1. Go to `client/` directory.
-2. Install dependencies: `npm install`.
-3. Start client: `npm run dev`.
+### Prerequisites
+- Node.js installed
+- MongoDB installed and running locally
 
-### Auto-concurrent Launch
-From the root directory:
+### 1. Backend Configuration
+Navigate to the `server/` directory and install dependencies:
+```bash
+cd server
+npm install
+```
+Create a `.env` file in the `server/` directory:
+```env
+PORT=5000
+MONGODB_URI=mongodb://localhost:27017/gov_portal
+JWT_SECRET=your_secret_key_here
+GROQ_API_KEY=your_groq_api_key_here
+GROQ_MODEL=llama3-8b-8192
+```
+
+### 2. Frontend Configuration
+Navigate to the `client/` directory and install dependencies:
+```bash
+cd client
+npm install
+```
+
+### 3. Initialize Admin Account
+To access the admin panel, run the seeding script:
+```bash
+cd server
+node seedAdmin.js
+```
+*Default Credentials: Email: `admin@gov.in` | Password: `Admin@123`*
+
+### 4. Run the Application
+From the root directory, run both server and client simultaneously:
 ```bash
 npm run dev
 ```
 
-## Technologies
-- **Frontend**: React, React Router, Axios.
-- **Backend**: Node.js, Express, MongoDB, Mongoose.
-- **AI**: Ollama (Local LLM), llama3.
-- **Authentication**: JWT, bcryptjs.
+## 📄 License
+This project is for educational and public service purposes.
