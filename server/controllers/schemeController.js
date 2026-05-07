@@ -1,4 +1,5 @@
 const Scheme = require('../models/Scheme');
+const { checkEligibility } = require('../services/eligibilityService');
 
 exports.getSchemes = async (req, res) => {
     try {
@@ -13,6 +14,22 @@ exports.getSchemesByCategory = async (req, res) => {
     try {
         const schemes = await Scheme.find({ categoryEn: req.params.category });
         res.json(schemes);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+exports.checkEligibilityBulk = async (req, res) => {
+    try {
+        const profile = req.body;
+        const schemes = await Scheme.find();
+        
+        const results = schemes.filter(scheme => {
+            const { score } = checkEligibility(scheme, profile);
+            return score >= 60; // Include only eligible or partially eligible
+        });
+
+        res.json(results);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -93,10 +110,10 @@ const seedData = [
         benefitDescEn: "Support",
         benefitDescTa: "ஆதரவு",
         categoryEn: "Women & Child",
-        categoryTa: "பெண் & குழந்தை",
+        categoryTa: "பெண்கள் & குழந்தைகள்",
         badgeChar: "B",
         badgeColor: "bg-pink",
-        tags: [{ en: "Women & Child", ta: "பெண் & குழந்தை", class: "tag-women" }],
+        tags: [{ en: "Women & Child", ta: "பெண்கள் & குழந்தைகள்", class: "tag-women" }],
         eligibility: { ageMin: 0, ageMax: 18, gender: 'Female', incomeMax: 1000000 }
     },
     {
@@ -134,4 +151,3 @@ exports.seedSchemes = async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 };
-

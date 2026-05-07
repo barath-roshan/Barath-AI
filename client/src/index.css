@@ -1140,3 +1140,110 @@ body {
 .btn-approve { background: var(--green); color: white; }
 .btn-reject { background: #c62828; color: white; }
 .btn-review { background: #ef6c00; color: white; }
+
+/* Chatbot Rebuild Styles */
+.chat-scheme-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 10px;
+  width: 100%;
+}
+
+.chat-scheme-card {
+  background: white;
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: transform 0.2s;
+}
+
+.chat-scheme-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.cscard-name {
+  font-weight: 700;
+  color: var(--navy);
+  font-size: 14px;
+}
+
+.cscard-tamil {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.cscard-benefit {
+  font-weight: 800;
+  color: var(--saffron);
+  font-size: 16px;
+  margin-top: 4px;
+}
+
+.chat-scheme-card button {
+  margin-top: 8px;
+  background: var(--navy);
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  width: fit-content;
+}
+
+.chat-app-status {
+  background: white;
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  border-left: 4px solid var(--navy);
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cas-number {
+  font-family: monospace;
+  font-weight: 700;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.cas-scheme {
+  font-weight: 700;
+  color: var(--navy);
+  font-size: 15px;
+}
+
+.cas-status {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  width: fit-content;
+}
+
+.status-submitted { background: #E3F2FD; color: #1565C0; }
+.status-under-review { background: #FFF3E0; color: #EF6C00; }
+.status-approved { background: #E8F5E9; color: #2E7D32; }
+.status-rejected { background: #FFEBEE; color: #C62828; }
+
+.cas-date {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.suggestion-chip:hover {
+  background-color: var(--navy-light) !important;
+  color: white !important;
+  border-color: var(--navy-light) !important;
+}

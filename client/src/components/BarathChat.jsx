@@ -1,22 +1,27 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 
 const BarathChat = ({ lang }) => {
-    const { user, isAuthenticated } = useAuth();
+    const { user } = useAuth();
+    const navigate = useNavigate();
     const [isOpen, setIsOpen] = useState(false);
     const [message, setMessage] = useState('');
     const [messages, setMessages] = useState([
         { 
             role: 'barath', 
             text: "வணக்கம்! Hello! I'm Barath, your Government Scheme Assistant. I can help you find schemes you qualify for or track your application. What would you like to do?",
-            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            time: new Date()
         }
     ]);
     const [suggestions, setSuggestions] = useState(["Find schemes for me", "Track my application", "Explain a scheme"]);
     const [isTyping, setIsTyping] = useState(false);
     const [unreadCount, setUnreadCount] = useState(0);
     const scrollRef = useRef(null);
+    
+    // Generate sessionId ONCE on component mount
+    const [sessionId] = useState(() => crypto.randomUUID());
 
     useEffect(() => {
         if (scrollRef.current) {
@@ -33,48 +38,42 @@ const BarathChat = ({ lang }) => {
     };
 
     const handleSend = async (text) => {
-        const userMsg = text || message;
-        if (!userMsg.trim()) return;
+        const userMsgText = text || message;
+        if (!userMsgText.trim()) return;
 
-        const newMsg = {
+        const userMsg = {
             role: 'user',
-            text: userMsg,
-            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            text: userMsgText,
+            time: new Date()
         };
 
-        setMessages(prev => [...prev, newMsg]);
+        setMessages(prev => [...prev, userMsg]);
         setMessage('');
         setSuggestions([]);
-        
-        // Fast-path handling
-        if (userMsg === "Track my application") {
-            setTimeout(() => {
-                setMessages(prev => [...prev, {
-                    role: 'barath',
-                    text: "Sure! Please enter your Application Number (format: APP-2025-123456) and I'll check its status for you.",
-                    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                }]);
-                setSuggestions(["I don't have it", "Go to Track page"]);
-            }, 600);
-            return;
-        }
-
         setIsTyping(true);
+
         try {
             const res = await api.post('/chatbot/message', {
-                message: userMsg,
-                userId: user?._id,
-                conversationHistory: messages
+                message: userMsgText,
+                sessionId,
+                userId: user?._id || user?.id || null
             });
 
-            const barathReply = {
-                role: 'barath',
-                text: res.data.reply,
-                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-            };
+            const { reply, suggestions: newSuggestions, matchedSchemes, applicationData } = res.data;
 
-            setMessages(prev => [...prev, barathReply]);
-            setSuggestions(res.data.suggestions || []);
+            // Anti-repetition on frontend
+            const lastBarathMsgs = messages.filter(m => m.role === 'barath').slice(-2);
+            const isDuplicate = lastBarathMsgs.some(m => m.text.slice(0,30) === reply.slice(0,30));
+            const finalReply = isDuplicate ? reply + ' Is there anything specific I can help clarify?' : reply;
+
+            setMessages(prev => [...prev, {
+                role: 'barath',
+                text: finalReply,
+                time: new Date(),
+                matchedSchemes,
+                applicationData
+            }]);
+            setSuggestions(newSuggestions || []);
             
             if (!isOpen) {
                 setUnreadCount(prev => prev + 1);
@@ -84,11 +83,15 @@ const BarathChat = ({ lang }) => {
             setMessages(prev => [...prev, {
                 role: 'barath',
                 text: "மன்னிக்கவும்! Sorry, I'm having trouble connecting right now. Please try again in a moment.",
-                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                time: new Date()
             }]);
         } finally {
             setIsTyping(false);
         }
+    };
+
+    const formatTime = (date) => {
+        return new Date(date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     };
 
     return (
@@ -111,6 +114,18 @@ const BarathChat = ({ lang }) => {
                         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                     </svg>
                     
+                    {unreadCount > 0 && (
+                        <div style={{ 
+                            position: 'absolute', top: '-5px', right: '-5px', 
+                            backgroundColor: 'var(--saffron)', color: 'white', 
+                            borderRadius: '50%', width: '24px', height: '24px',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            fontSize: '12px', fontWeight: '800', border: '2px solid white'
+                        }}>
+                            {unreadCount}
+                        </div>
+                    )}
+
                     <div className="saffron-dot-container" style={{ position: 'absolute', top: '2px', right: '2px', width: '14px', height: '14px' }}>
                         <div className="pulse-ring ring-1"></div>
                         <div className="pulse-ring ring-2"></div>
@@ -159,7 +174,7 @@ const BarathChat = ({ lang }) => {
                     {messages.map((msg, idx) => (
                         <div key={idx} style={{
                             alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start',
-                            maxWidth: '85%'
+                            maxWidth: '90%'
                         }}>
                             <div style={{
                                 padding: '16px 20px', borderRadius: '16px',
@@ -171,8 +186,39 @@ const BarathChat = ({ lang }) => {
                                 borderBottomLeftRadius: msg.role === 'user' ? '16px' : '4px'
                             }}>
                                 {msg.text}
+
+                                {msg.matchedSchemes?.length > 0 && (
+                                    <div className="chat-scheme-cards">
+                                        {msg.matchedSchemes.map(scheme => (
+                                            <div key={scheme.id} className="chat-scheme-card"
+                                                style={{ borderLeft: `4px solid ${scheme.thumbnailColor || 'var(--saffron)'}` }}>
+                                                <div className="cscard-name">{scheme.name}</div>
+                                                <div className="cscard-tamil">{scheme.nameTamil}</div>
+                                                <div className="cscard-benefit">{scheme.benefitAmount}</div>
+                                                <button onClick={() => navigate(`/schemes/${scheme.id || scheme._id}`)}>
+                                                    View Details →
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {msg.applicationData && (
+                                    <div className="chat-app-status">
+                                        <div className="cas-number">{msg.applicationData.applicationNumber}</div>
+                                        <div className="cas-scheme">{msg.applicationData.schemeName}</div>
+                                        <div className={`cas-status status-${msg.applicationData.status.toLowerCase().replace(/\s+/g, '-')}`}>
+                                            {msg.applicationData.status}
+                                        </div>
+                                        <div className="cas-date">
+                                            Submitted: {new Date(msg.applicationData.submittedAt).toLocaleDateString('en-IN')}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
-                            <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '6px', textAlign: msg.role === 'user' ? 'right' : 'left' }}>{msg.time}</div>
+                            <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '6px', textAlign: msg.role === 'user' ? 'right' : 'left' }}>
+                                {formatTime(msg.time)}
+                            </div>
                         </div>
                     ))}
                     
@@ -224,6 +270,5 @@ const BarathChat = ({ lang }) => {
         </>
     );
 };
-
 
 export default BarathChat;
